@@ -6,24 +6,24 @@ canvas.height = window.innerHeight;
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const fontSize = 14;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
+const columns = Math.floor(canvas.width / fontSize);
+const drops = new Array(columns).fill(1);
 
 const messages = [
   "Happy Birthday",
   "alaa",
   "27.8.1999",
-  "26+"
+  "26+",
 ];
 
 let particles = [];
-let targetPoints = [];
 let currentMsgIndex = 0;
 const delayBetweenTexts = 3000;
 
 function drawMatrixBackground() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
   ctx.fillStyle = "#b76eff";
   ctx.font = fontSize + "px monospace";
 
@@ -52,8 +52,8 @@ function generateTargets(text) {
 
   const imgData = tempCtx.getImageData(0, 0, canvas.width, canvas.height).data;
   let points = [];
-  for (let y = 0; y < canvas.height; y += 3) {
-    for (let x = 0; x < canvas.width; x += 3) {
+  for (let y = 0; y < canvas.height; y += 4) {
+    for (let x = 0; x < canvas.width; x += 4) {
       const i = (y * canvas.width + x) * 4;
       if (imgData[i + 3] > 150) {
         points.push({ x, y });
@@ -63,76 +63,83 @@ function generateTargets(text) {
   return points;
 }
 
-function createParticles(newTargets) {
-  const newParticles = [];
-  for (let i = 0; i < newTargets.length; i++) {
-    const target = newTargets[i];
-    const existing = particles[i] || {
+function createParticlesFromTargets(targets) {
+  particles = targets.map((t, i) => {
+    const prev = particles[i] || {
       x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      color: "pink"
+      y: Math.random() * canvas.height
     };
-    newParticles.push({
-      x: existing.x,
-      y: existing.y,
-      targetX: target.x,
-      targetY: target.y,
-      color: existing.color
-    });
-  }
-  particles = newParticles;
+    return {
+      x: prev.x,
+      y: prev.y,
+      targetX: t.x,
+      targetY: t.y,
+      color: "hotpink"
+    };
+  });
 }
 
-function createHeartWithText(textInsideHeart) {
+function createHeartShapeWithText(text) {
   const heartPoints = [];
-  const scale = 18;
+  const scale = 20;
   for (let t = 0; t < Math.PI * 2; t += 0.05) {
     const x = 16 * Math.pow(Math.sin(t), 3);
     const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-    for (let j = 0; j < 3; j++) {
+    for (let i = 0; i < 2; i++) {
       heartPoints.push({
-        x: centerX + (x + j * 0.8) * scale,
+        x: centerX + (x + i * 0.5) * scale,
         y: centerY - y * scale
       });
     }
   }
 
-  const textTargets = generateTargets(textInsideHeart);
-  particles = heartPoints.concat(textTargets).map((p, i) => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    targetX: p.x,
-    targetY: p.y,
-    color: "pink"
-  }));
+  const textTargets = generateTargets(text);
+  const final = heartPoints.concat(textTargets.map(p => ({ x: p.x, y: p.y })));
+
+  particles = final.map((p, i) => {
+    const prev = particles[i] || {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height
+    };
+    return {
+      x: prev.x,
+      y: prev.y,
+      targetX: p.x,
+      targetY: p.y,
+      color: "hotpink"
+    };
+  });
 }
 
 function animate() {
   drawMatrixBackground();
+
   for (let p of particles) {
     p.x += (p.targetX - p.x) * 0.08;
     p.y += (p.targetY - p.y) * 0.08;
+
     ctx.fillStyle = p.color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
     ctx.fill();
   }
+
   requestAnimationFrame(animate);
 }
 
-function showMessages() {
-  if (currentMsgIndex < messages.length - 1) {
+function showNextMessage() {
+  if (currentMsgIndex < messages.length) {
     const targets = generateTargets(messages[currentMsgIndex]);
-    createParticles(targets);
+    createParticlesFromTargets(targets);
     currentMsgIndex++;
-    setTimeout(showMessages, delayBetweenTexts);
+    setTimeout(showNextMessage, delayBetweenTexts);
   } else {
     setTimeout(() => {
-      createHeartWithText("My Beautiful Princess");
+      createHeartShapeWithText("My Beautiful Princess");
     }, delayBetweenTexts);
   }
 }
 
 animate();
-showMessages();
+showNextMessage();
 setInterval(drawMatrixBackground, 33);
