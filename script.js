@@ -140,6 +140,25 @@ function showNextMessage() {
   }
 }
 
+// 💖 عندما يتم لمس أو الضغط على الشاشة
+function spawnILoveYouTexts() {
+  for (let i = 0; i < 5; i++) {
+    const textEl = document.createElement("div");
+    textEl.textContent = "I Love You";
+    textEl.className = "love-text";
+    textEl.style.left = `${Math.random() * (window.innerWidth - 200) + 50}px`;
+    textEl.style.top = `${Math.random() * (window.innerHeight - 200) + 50}px`;
+
+    document.body.appendChild(textEl);
+
+    setTimeout(() => {
+      document.body.removeChild(textEl);
+    }, 4000);
+  }
+}
+
+canvas.addEventListener("click", spawnILoveYouTexts);
+
 animate();
 showNextMessage();
 setInterval(drawMatrixBackground, 33);
