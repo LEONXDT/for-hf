@@ -15,7 +15,7 @@ const drops = new Array(columns).fill(1);
 const messages = [
   "Happy Birthday",
   "alaa",
-  "1999.27.8",
+  "27.8.1999",
   "26+"
 ];
 
