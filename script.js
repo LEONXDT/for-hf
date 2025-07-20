@@ -16,10 +16,7 @@ const messages = [
   "Happy Birthday",
   "alaa",
   "1999.27.8",
-  "Happy26",
-  "My Beautiful Moon",
-  "My Little Princess❤",
-  "My Only Love"
+  "26+"
 ];
 
 let particles = [];
