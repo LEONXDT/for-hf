@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Birthday Animation</title>
   <style>
     body {
@@ -11,6 +11,24 @@
     }
     canvas {
       display: block;
+    }
+
+    /* حجم الخط للموبايل */
+    @media (max-width: 768px) {
+      :root {
+        --text-font-size: 60px;
+        --particle-radius: 2.5;
+        --heart-scale: 16;
+      }
+    }
+
+    /* حجم الخط للكمبيوتر أو اللابتوب */
+    @media (min-width: 769px) {
+      :root {
+        --text-font-size: 80px;
+        --particle-radius: 1.8;
+        --heart-scale: 20;
+      }
     }
   </style>
 </head>
@@ -22,11 +40,12 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-const fontSize = 14;
+let fontSize = 14;
 const columns = Math.floor(canvas.width / fontSize);
 const drops = new Array(columns).fill(1);
+
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
 
 const messages = [
   "Happy Birthday",
@@ -38,6 +57,11 @@ const messages = [
 let particles = [];
 let currentMsgIndex = 0;
 const delayBetweenTexts = 3000;
+
+// قراءة القيم من CSS Variables
+function getCSSVar(name, fallback) {
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name)) || fallback;
+}
 
 function drawMatrixBackground() {
   ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
@@ -61,8 +85,9 @@ function generateTargets(text) {
   tempCanvas.width = canvas.width;
   tempCanvas.height = canvas.height;
 
-  tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-  tempCtx.font = "bold 80px Arial";
+  const textSize = getCSSVar('--text-font-size', 80);
+
+  tempCtx.font = `bold ${textSize}px Arial`;
   tempCtx.fillStyle = "white";
   tempCtx.textAlign = "center";
   tempCtx.textBaseline = "middle";
@@ -98,8 +123,8 @@ function createParticlesFromTargets(targets) {
 }
 
 function createHeartShapeWithText(text) {
+  const scale = getCSSVar('--heart-scale', 20);
   const heartPoints = [];
-  const scale = 20;
   for (let t = 0; t < Math.PI * 2; t += 0.05) {
     const x = 16 * Math.pow(Math.sin(t), 3);
     const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
@@ -132,13 +157,15 @@ function createHeartShapeWithText(text) {
 function animate() {
   drawMatrixBackground();
 
+  const radius = getCSSVar('--particle-radius', 2);
+
   for (let p of particles) {
     p.x += (p.targetX - p.x) * 0.08;
     p.y += (p.targetY - p.y) * 0.08;
 
     ctx.fillStyle = p.color;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -162,7 +189,7 @@ animate();
 showNextMessage();
 setInterval(drawMatrixBackground, 33);
 
-// ⇨ كلمات "i love you" عند لمس الشاشة
+// لمس الشاشة: كلمات "I love you"
 canvas.addEventListener("click", () => {
   let count = 0;
   const interval = setInterval(() => {
