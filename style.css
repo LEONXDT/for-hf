@@ -4,6 +4,33 @@ body, html {
   overflow: hidden;
   background: black;
 }
+
 canvas {
   display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.love-text {
+  position: absolute;
+  font-size: 36px;
+  font-weight: bold;
+  color: hotpink;
+  font-family: Arial, sans-serif;
+  pointer-events: none;
+  opacity: 1;
+  animation: floatAndFade 4s ease-in-out forwards;
+  text-shadow: 0 0 15px #ff69b4;
+}
+
+@keyframes floatAndFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-60px);
+  }
 }
