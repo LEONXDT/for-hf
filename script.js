@@ -3,6 +3,9 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+const audio = document.getElementById("bg-music");
+let musicStarted = false;
+
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const fontSize = 14;
@@ -12,11 +15,15 @@ const drops = new Array(columns).fill(1);
 const messages = [
   "Happy Birthday",
   "alaa",
-  "27.8.1999",
-  "26+"
+  "1999.27.8",
+  "Happy26",
+  "My Beautiful Moon",
+  "My Little Princess❤",
+  "My Only Love"
 ];
 
 let particles = [];
+let textParticles = [];
 let currentMsgIndex = 0;
 const delayBetweenTexts = 3000;
 
@@ -43,7 +50,6 @@ function generateTargets(text) {
   tempCanvas.width = canvas.width;
   tempCanvas.height = canvas.height;
 
-  tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
   tempCtx.font = "bold 80px Arial";
   tempCtx.fillStyle = "white";
   tempCtx.textAlign = "center";
@@ -64,8 +70,8 @@ function generateTargets(text) {
 }
 
 function createParticlesFromTargets(targets) {
-  particles = targets.map((t, i) => {
-    const prev = particles[i] || {
+  textParticles = targets.map((t, i) => {
+    const prev = textParticles[i] || {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height
     };
@@ -74,7 +80,8 @@ function createParticlesFromTargets(targets) {
       y: prev.y,
       targetX: t.x,
       targetY: t.y,
-      color: "hotpink"
+      color: "hotpink",
+      text: null
     };
   });
 }
@@ -96,8 +103,8 @@ function createHeartShapeWithText(text) {
   const textTargets = generateTargets(text);
   const final = heartPoints.concat(textTargets.map(p => ({ x: p.x, y: p.y })));
 
-  particles = final.map((p, i) => {
-    const prev = particles[i] || {
+  textParticles = final.map((p, i) => {
+    const prev = textParticles[i] || {
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height
     };
@@ -106,7 +113,8 @@ function createHeartShapeWithText(text) {
       y: prev.y,
       targetX: p.x,
       targetY: p.y,
-      color: "hotpink"
+      color: "hotpink",
+      text: null
     };
   });
 }
@@ -114,14 +122,19 @@ function createHeartShapeWithText(text) {
 function animate() {
   drawMatrixBackground();
 
-  for (let p of particles) {
+  for (let p of [...textParticles, ...particles]) {
     p.x += (p.targetX - p.x) * 0.08;
     p.y += (p.targetY - p.y) * 0.08;
 
     ctx.fillStyle = p.color;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
-    ctx.fill();
+    if (p.text) {
+      ctx.font = "20px Arial";
+      ctx.fillText(p.text, p.x, p.y);
+    } else {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 
   requestAnimationFrame(animate);
@@ -135,29 +148,39 @@ function showNextMessage() {
     setTimeout(showNextMessage, delayBetweenTexts);
   } else {
     setTimeout(() => {
-      createHeartShapeWithText("My Beautiful Princess");
+      createHeartShapeWithText("My Beautiful Princess❤");
     }, delayBetweenTexts);
   }
 }
 
-// 💖 عندما يتم لمس أو الضغط على الشاشة
-function spawnILoveYouTexts() {
-  for (let i = 0; i < 5; i++) {
-    const textEl = document.createElement("div");
-    textEl.textContent = "I Love You";
-    textEl.className = "love-text";
-    textEl.style.left = `${Math.random() * (window.innerWidth - 200) + 50}px`;
-    textEl.style.top = `${Math.random() * (window.innerHeight - 200) + 50}px`;
-
-    document.body.appendChild(textEl);
-
+function spawnILoveYou(x, y) {
+  for (let i = 0; i < 10; i++) {
+    const angle = Math.random() * 2 * Math.PI;
+    const radius = Math.random() * 100;
+    const tx = x + Math.cos(angle) * radius;
+    const ty = y + Math.sin(angle) * radius;
+    const particle = {
+      x: x,
+      y: y,
+      targetX: tx,
+      targetY: ty,
+      color: "deeppink",
+      text: "I love you"
+    };
+    particles.push(particle);
     setTimeout(() => {
-      document.body.removeChild(textEl);
+      particles = particles.filter(p => p !== particle);
     }, 4000);
   }
 }
 
-canvas.addEventListener("click", spawnILoveYouTexts);
+canvas.addEventListener("click", (e) => {
+  if (!musicStarted) {
+    audio.play();
+    musicStarted = true;
+  }
+  spawnILoveYou(e.clientX, e.clientY);
+});
 
 animate();
 showNextMessage();
